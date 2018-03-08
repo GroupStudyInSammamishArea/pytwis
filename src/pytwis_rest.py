@@ -1,5 +1,33 @@
+# 
+# REST API for pytwis
+#
+# Resource      Action      Operation
+# ===========================================================================
+# users         POST        Create a new user (register)
+#               GET         Get the information of a user (implicit login, 
+#                           following and follower)
+#               PUT         Modify a user (change his followers, change his 
+#                           password)
+# posts         POST        Post a new tweet
+#               GET         Get timeline
+#
+#
+# How to run:
+# Borrowing code from pytwis_clt.py, if everything about Redis is by default:
+# python3 pytwis_rest.py
+#
+# How to test:
+# Use curl tool. For example, to get information of a user
+#   curl -H "Content-type: application/json" 
+#       -X GET http://127.0.0.1:5000/pytwis/api/v1.0/users 
+#       -d '{"username":"gavin","password":"gavin"}'
+# To modify password
+#   curl -H "Content-type: application/json" 
+#       -X PUT http://127.0.0.1:5000/pytwis/api/v1.0/users
+#       -d '{"username":"gavin","password":"gavin", "new_password":"g"}'
+#
+
 from flask import Flask, jsonify, request, abort, make_response
-import pytwis_clt
 import pytwis
 import time
 import sys
