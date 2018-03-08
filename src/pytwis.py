@@ -17,6 +17,7 @@ class Pytwis:
     USER_ID_PROFILE_USERNAME_KEY = 'username'
     USER_ID_PROFILE_PASSWORD_KEY = 'password'
     USER_ID_PROFILE_AUTH_KEY = 'auth'
+    USER_ID_PROFILE_USERID_NAME = 'userid'
     
     AUTHS_HASH_KEY = 'auths'
     
@@ -117,6 +118,9 @@ class Pytwis:
                         self.USER_ID_PROFILE_PASSWORD_KEY: password,
                         self.USER_ID_PROFILE_AUTH_KEY: auth_secret})
             pipe.execute()
+
+        result[self.USER_ID_PROFILE_USERID_NAME] = user_id
+        result[self.USER_ID_PROFILE_AUTH_KEY] = auth_secret
         
         return (True, result)
             
