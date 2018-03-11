@@ -172,6 +172,7 @@ class Pytwis:
         user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(user_id)
         stored_password = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_PASSWORD_KEY)
         if password == stored_password:
+            result[self.USER_ID_PROFILE_USERNAME_KEY] = username
             result[self.USER_ID_PROFILE_AUTH_KEY] = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_AUTH_KEY)
             return (True, result)
         else:
@@ -201,6 +202,7 @@ class Pytwis:
             
         result[self.USER_ID_PROFILE_USERNAME_KEY] = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_USERNAME_KEY)
         result[self.USER_ID_PROFILE_AUTH_KEY] = ''
+        result[self.USER_ID_PROFILE_USERNAME_KEY] = ''
         return (True, result)
     
     def post_tweet(self, auth_secret, tweet):
