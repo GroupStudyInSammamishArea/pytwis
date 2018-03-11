@@ -54,15 +54,15 @@ def index():
 
 @app.route(HTTP_INDEX_URL+'users', methods=['POST'])
 def register_user():
-    if not request.json or not 'username' in request.json or not 'password' in request.json:
+    if not request.json or not PytwisConst.USERNAME in request.json or not PytwisConst.PASSWORD in request.json:
         abort(400)
     # Call twis API to register a new user
-    succeeded, result = g_pytwis.register(request.json['username'], request.json['password'])
+    succeeded, result = g_pytwis.register(request.json[PytwisConst.USERNAME], request.json[PytwisConst.PASSWORD])
     if succeeded:
         server_resp = {
             'userid': result[g_pytwis.USER_ID_PROFILE_USERID_NAME],
-            'username': request.json['username'],
-            'auth': result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
+            PytwisConst.USERNAME: request.json[PytwisConst.USERNAME],
+            PytwisConst.AUTH: result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
         }
         return jsonify(server_resp)
     else:
@@ -73,30 +73,30 @@ def get_user_info():
     # Initialize user properties
     userinfo = {
         'userid': 'n/a',
-        'username': 'n/a'
+        PytwisConst.USERNAME: 'n/a'
     }
     auth = ''
 
     if not request.json: 
         abort(400)
     # If there is a set of credentials, try login first
-    elif 'username' in request.json and 'password' in request.json:
-        succeeded, result = g_pytwis.login(request.json['username'], request.json['password'])
+    elif PytwisConst.USERNAME in request.json and PytwisConst.PASSWORD in request.json:
+        succeeded, result = g_pytwis.login(request.json[PytwisConst.USERNAME], request.json[PytwisConst.PASSWORD])
         if succeeded:
             print(result, sys.stderr)
             auth = result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
-            userinfo['username'] = request.json['username']
+            userinfo[PytwisConst.USERNAME] = request.json[PytwisConst.USERNAME]
         else:
             return make_response(jsonify(process_error(result)), 404)
     # If there is auth information, use it.
-    elif 'auth' in request.json:
-        auth = request.json['auth']
+    elif PytwisConst.AUTH in request.json:
+        auth = request.json[PytwisConst.AUTH]
     else:
         abort(400)
 
     succeeded, result = g_pytwis.get_followers(auth)
     if succeeded:
-        userinfo['followers'] = result['follower_list']
+        userinfo[PytwisConst.CMD_FOLLOWERS] = result['follower_list']
     else:
         return make_response(jsonify(process_error(result)), 404)
     
@@ -114,14 +114,14 @@ def update_user():
     if not request.json:
         abort(400)
     # If there is a set of credentials, try login first
-    elif 'username' in request.json and 'password' in request.json:
-        succeeded, result = g_pytwis.login(request.json['username'], request.json['password'])
+    elif PytwisConst.USERNAME in request.json and PytwisConst.PASSWORD in request.json:
+        succeeded, result = g_pytwis.login(request.json[PytwisConst.USERNAME], request.json[PytwisConst.PASSWORD])
         if succeeded:
             auth = result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
         else:
             return make_response(jsonify(process_error(result)), 404)
-    elif 'auth' in request.json:
-        auth = request.json['auth']
+    elif PytwisConst.AUTH in request.json:
+        auth = request.json[PytwisConst.AUTH]
 
     succeeded = False
     result = {'error': "Unknown operation"}
@@ -129,8 +129,8 @@ def update_user():
         succeeded, result = g_pytwis.follow(request.json['added_follower'])
     elif 'removed_follower' in request.json:
         succeeded, result = g_pytwis.unfollow(request.json['removed_follower'])
-    elif 'new_password' in request.json and 'password' in request.json:
-        succeeded, result = g_pytwis.change_password(auth, request.json['password'], request.json['new_password'])
+    elif PytwisConst.NEW_PASSWORD in request.json and PytwisConst.PASSWORD in request.json:
+        succeeded, result = g_pytwis.change_password(auth, request.json[PytwisConst.PASSWORD], request.json[PytwisConst.NEW_PASSWORD])
 
     if succeeded:
         return make_response(jsonify(result), 200)
@@ -143,14 +143,14 @@ def add_post():
     if not request.json or not 'tweet_content' in request.json:
         abort(400)
     # If there is a set of credentials, try login first
-    elif 'username' in request.json and 'password' in request.json:
-        succeeded, result = g_pytwis.login(request.json['username'], request.json['password'])
+    elif PytwisConst.USERNAME in request.json and PytwisConst.PASSWORD in request.json:
+        succeeded, result = g_pytwis.login(request.json[PytwisConst.USERNAME], request.json[PytwisConst.PASSWORD])
         if succeeded:
             auth = result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
         else:
             return make_response(jsonify(process_error(result)), 404)
-    elif 'auth' in request.json:
-        auth = request.json['auth']
+    elif PytwisConst.AUTH in request.json:
+        auth = request.json[PytwisConst.AUTH]
 
     succeeded, result = g_pytwis.post_tweet(auth, request.json['tweet_content'])
     if succeeded:
@@ -164,14 +164,14 @@ def get_timeline():
     if not request.json or not 'tweet_content' in request.json:
         abort(400)
     # If there is a set of credentials, try login first
-    elif 'username' in request.json and 'password' in request.json:
-        succeeded, result = g_pytwis.login(request.json['username'], request.json['password'])
+    elif PytwisConst.USERNAME in request.json and PytwisConst.PASSWORD in request.json:
+        succeeded, result = g_pytwis.login(request.json[PytwisConst.USERNAME], request.json[PytwisConst.PASSWORD])
         if succeeded:
             auth = result[g_pytwis.USER_ID_PROFILE_AUTH_KEY]
         else:
             return make_response(jsonify(process_error(result)), 404)
-    elif 'auth' in request.json:
-        auth = request.json['auth']
+    elif PytwisConst.AUTH in request.json:
+        auth = request.json[PytwisConst.AUTH]
 
     succeeded, result = g_pytwis.get_timeline(auth)
     if succeeded:

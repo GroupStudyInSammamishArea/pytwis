@@ -7,7 +7,7 @@ import parse
 import sys
 
 import pytwis
-
+from pytwis import PytwisConst
 
 def validate_command(raw_command):
     parsed_command = raw_command.split()
@@ -16,31 +16,31 @@ def validate_command(raw_command):
     if (len(parsed_command) == 0):
         return
 
-    if (parsed_command[0] == 'register'):
+    if (parsed_command[0] == PytwisConst.CMD_REGISTER):
         if (arg_count < 2):
             raise ValueError('register {user_name} {password}')
-    elif (parsed_command[0] == 'login'):
+    elif (parsed_command[0] == PytwisConst.CMD_LOGIN):
         if (arg_count < 2):
             raise ValueError('login {user_name} {password}')
-    elif (parsed_command[0] == 'logout'):
+    elif (parsed_command[0] == PytwisConst.CMD_LOGOUT):
         pass
-    elif (parsed_command[0] == 'changepassword'):
+    elif (parsed_command[0] == PytwisConst.CMD_CHANGE_PASSWORD):
         if (arg_count < 3):
             raise ValueError('changepassword {old_password} {new_password} {confirmed_new_password}')
-    elif (parsed_command[0] == 'post'):
+    elif (parsed_command[0] == PytwisConst.CMD_POST):
         if (arg_count < 1):
             raise ValueError('post {tweet}')
-    elif (parsed_command[0] == 'follow'):
+    elif (parsed_command[0] == PytwisConst.CMD_FOLLOW):
         if (arg_count < 1):
             raise ValueError('follow {followee}')
-    elif (parsed_command[0] == 'unfollow'):
+    elif (parsed_command[0] == PytwisConst.CMD_UNFOLLOW):
         if (arg_count < 1):
             raise ValueError('unfollow {followee}')
-    elif (parsed_command[0] == 'followers'):
+    elif (parsed_command[0] == PytwisConst.CMD_FOLLOWERS):
         pass
-    elif (parsed_command[0] == 'followings'):
+    elif (parsed_command[0] ==PytwisConst.CMD_FOLLOWINGS):
         pass
-    elif (parsed_command[0] == 'timeline'):
+    elif (parsed_command[0] == PytwisConst.CMD_TIMELINE):
         if (arg_count > 2):
             raise ValueError('timeline {tweet count} or timeline')
     elif (parsed_command[0] == 'exit') or (parsed_command[0] == 'quit'):
@@ -59,61 +59,61 @@ def pytwis_command_parser(raw_command):
 
     validate_command(raw_command)
 
-    if command_with_args[0] == 'register':
+    if command_with_args[0] == PytwisConst.CMD_REGISTER:
         # register must have two arguments: username and password.
         args = splited_raw_command[1]
         arg_dict = parse.parse('{username} {password}', args)
         if arg_dict is None:
             raise ValueError('register has incorrect arguments')
-        elif ' ' in arg_dict['password']:
+        elif ' ' in arg_dict[PytwisConst.PASSWORD]:
             raise ValueError("password can't contain spaces")
 
-        print('register: username = {}, password = {}'.format(arg_dict['username'], arg_dict['password']))
-    elif command_with_args[0] == 'login':
+        print('register: username = {}, password = {}'.format(arg_dict[PytwisConst.USERNAME], arg_dict[PytwisConst.PASSWORD]))
+    elif command_with_args[0] == PytwisConst.CMD_LOGIN:
         # login must have two arguments: username and password.
         args = splited_raw_command[1]
         arg_dict = parse.parse('{username} {password}', args)
         if arg_dict is None:
             raise ValueError('login has incorrect arguments')
 
-        print('login: username = {}, password = {}'.format(arg_dict['username'], arg_dict['password']))
-    elif command_with_args[0] == 'logout':
+        print('login: username = {}, password = {}'.format(arg_dict[PytwisConst.USERNAME], arg_dict[PytwisConst.PASSWORD]))
+    elif command_with_args[0] == PytwisConst.CMD_LOGOUT:
         # logout doesn't have any arguments.
         pass
-    elif command_with_args[0] == 'changepassword':
+    elif command_with_args[0] == PytwisConst.CMD_CHANGE_PASSWORD:
         # changepassword must have three arguments: old_password, new_password, and confirmed_new_password.
         args = splited_raw_command[1]
         arg_dict = parse.parse('{old_password} {new_password} {confirmed_new_password}', args)
         if arg_dict is None:
             raise ValueError('changepassword has incorrect arguments')
-        elif arg_dict['new_password'] != arg_dict['confirmed_new_password']:
+        elif arg_dict[PytwisConst.NEW_PASSWORD] != arg_dict[PytwisConst.CONFIRM_PASSWORD]:
             raise ValueError('The confirmed new password is different from the new password')
-        elif arg_dict['new_password'] == arg_dict['old_password']:
+        elif arg_dict[PytwisConst.NEW_PASSWORD] == arg_dict[PytwisConst.OLD_PASSWORD]:
             raise ValueError('The new password is the same as the old password')
 
-        print('changepassword: old = {}, new = {}'.format(arg_dict['old_password'], arg_dict['new_password']))
-    elif command_with_args[0] == 'post':
+        print('changepassword: old = {}, new = {}'.format(arg_dict[PytwisConst.OLD_PASSWORD], arg_dict[PytwisConst.NEW_PASSWORD]))
+    elif command_with_args[0] == PytwisConst.CMD_POST:
         # post must have one argument: tweet
-        arg_dict = {'tweet': splited_raw_command[1]}
-    elif command_with_args[0] == 'follow':
+        arg_dict = {PytwisConst.TWEET: splited_raw_command[1]}
+    elif command_with_args[0] == PytwisConst.CMD_FOLLOW:
         # follow must have one argument: followee.
-        arg_dict = {'followee': splited_raw_command[1]}
-    elif command_with_args[0] == 'unfollow':
+        arg_dict = {PytwisConst.FOLLOWEE: splited_raw_command[1]}
+    elif command_with_args[0] == PytwisConst.CMD_UNFOLLOW:
         # unfollow must have one argument: followee.
-        arg_dict = {'followee': splited_raw_command[1]}
-    elif command_with_args[0] == 'followers':
+        arg_dict = {PytwisConst.FOLLOWEE: splited_raw_command[1]}
+    elif command_with_args[0] == PytwisConst.CMD_FOLLOWERS:
         # followers doesn't have any arguments.
         pass
-    elif command_with_args[0] == 'followings':
+    elif command_with_args[0] ==PytwisConst.CMD_FOLLOWINGS:
         # followings doesn't have any arguments.
         pass
-    elif command_with_args[0] == 'timeline':
+    elif command_with_args[0] == PytwisConst.CMD_TIMELINE:
         # timeline has either zero or one argument.
         max_cnt_tweets = -1
         if len(splited_raw_command) >= 2:
             max_cnt_tweets = int(splited_raw_command[1])
 
-        arg_dict = {'max_cnt_tweets': max_cnt_tweets}
+        arg_dict = {PytwisConst.MAX_TWEET_CNT: max_cnt_tweets}
     elif command_with_args[0] == 'exit' or command_with_args[0] == 'quit':
         # exit or quit doesn't have any arguments.
         pass
@@ -130,7 +130,7 @@ def print_tweets(tweets):
     for index, tweet in enumerate(tweets):
         print('-' * 60)
         print('Tweet {}:'.format(index))
-        print('Username:', tweet['username'])
+        print('Username:', tweet[PytwisConst.USERNAME])
         print('Time:', datetime.datetime.fromtimestamp(int(tweet['unix_time'])).strftime('%Y-%m-%d %H:%M:%S'))
         print('Body:\n\t', tweet['body'])
         print('-' * 60)
@@ -141,52 +141,52 @@ def pytwis_command_processor(twis, auth_secret, command_with_args):
     command = command_with_args[0]
     args = command_with_args[1]
 
-    if command == 'register':
-        succeeded, result = twis.register(args['username'], args['password'])
+    if command == PytwisConst.CMD_REGISTER:
+        succeeded, result = twis.register(args[PytwisConst.USERNAME], args[PytwisConst.PASSWORD])
         if succeeded:
-            print('Succeeded in registering {}'.format(args['username']))
+            print('Succeeded in registering {}'.format(args[PytwisConst.USERNAME]))
         else:
-            print('Failed to register {} with error = {}'.format(args['username'], result['error']))
-    elif command == 'login':
-        succeeded, result = twis.login(args['username'], args['password'])
+            print('Failed to register {} with error = {}'.format(args[PytwisConst.USERNAME], result['error']))
+    elif command == PytwisConst.CMD_LOGIN:
+        succeeded, result = twis.login(args[PytwisConst.USERNAME], args[PytwisConst.PASSWORD])
         if succeeded:
-            auth_secret[0] = result['auth']
-            print('Succeeded in logging into username {}'.format(args['username']))
+            auth_secret[0] = result[PytwisConst.AUTH]
+            print('Succeeded in logging into username {}'.format(args[PytwisConst.USERNAME]))
         else:
-            print("Couldn't log into username {} with error = {}".format(args['username'], result['error']))
-    elif command == 'logout':
+            print("Couldn't log into username {} with error = {}".format(args[PytwisConst.USERNAME], result['error']))
+    elif command == PytwisConst.CMD_LOGOUT:
         succeeded, result = twis.logout(auth_secret[0])
         if succeeded:
-            auth_secret[0] = result['auth']
-            print('Logged out of username {}'.format(result['username']))
+            auth_secret[0] = result[PytwisConst.AUTH]
+            print('Logged out of username {}'.format(result[PytwisConst.USERNAME]))
         else:
             print("Couldn't log out with error = {}".format(result['error']))
-    elif command == 'changepassword':
-        succeeded, result = twis.change_password(auth_secret[0], args['old_password'], args['new_password'])
+    elif command == PytwisConst.CMD_CHANGE_PASSWORD:
+        succeeded, result = twis.change_password(auth_secret[0], args[PytwisConst.OLD_PASSWORD], args[PytwisConst.NEW_PASSWORD])
         if succeeded:
-            auth_secret[0] = result['auth']
+            auth_secret[0] = result[PytwisConst.AUTH]
             print('Succeeded in changing the password')
         else:
             print("Couldn't change the password with error = {}".format(result['error']))
-    elif command == 'post':
-        succeeded, result = twis.post_tweet(auth_secret[0], args['tweet'])
+    elif command == PytwisConst.CMD_POST:
+        succeeded, result = twis.post_tweet(auth_secret[0], args[PytwisConst.TWEET])
         if succeeded:
             print('Succeeded in posting the tweet')
         else:
             print("Couldn't post the tweet with error = {}".format(result['error']))
-    elif command == 'follow':
-        succeeded, result = twis.follow(auth_secret[0], args['followee'])
+    elif command == PytwisConst.CMD_FOLLOW:
+        succeeded, result = twis.follow(auth_secret[0], args[PytwisConst.FOLLOWEE])
         if succeeded:
-            print('Succeeded in following username {}'.format(args['followee']))
+            print('Succeeded in following username {}'.format(args[PytwisConst.FOLLOWEE]))
         else:
-            print("Couldn't follow the username {} with error = {}".format(args['followee'], result['error']))
-    elif command == 'unfollow':
-        succeeded, result = twis.unfollow(auth_secret[0], args['followee'])
+            print("Couldn't follow the username {} with error = {}".format(args[PytwisConst.FOLLOWEE], result['error']))
+    elif command == PytwisConst.CMD_UNFOLLOW:
+        succeeded, result = twis.unfollow(auth_secret[0], args[PytwisConst.FOLLOWEE])
         if succeeded:
-            print('Succeeded in unfollowing username {}'.format(args['followee']))
+            print('Succeeded in unfollowing username {}'.format(args[PytwisConst.FOLLOWEE]))
         else:
-            print("Couldn't unfollow the username {} with error = {}".format(args['followee'], result['error']))
-    elif command == 'followers':
+            print("Couldn't unfollow the username {} with error = {}".format(args[PytwisConst.FOLLOWEE], result['error']))
+    elif command == PytwisConst.CMD_FOLLOWERS:
         succeeded, result = twis.get_followers(auth_secret[0])
         if succeeded:
             print('Succeeded in get the list of {} followers'.format(len(result['follower_list'])))
@@ -196,7 +196,7 @@ def pytwis_command_processor(twis, auth_secret, command_with_args):
             print('=' * 20)
         else:
             print("Couldn't get the follower list with error = {}".format(result['error']))
-    elif command == 'followings':
+    elif command ==PytwisConst.CMD_FOLLOWINGS:
         succeeded, result = twis.get_following(auth_secret[0])
         if succeeded:
             print('Succeeded in get the list of {} followings'.format(len(result['following_list'])))
@@ -206,14 +206,14 @@ def pytwis_command_processor(twis, auth_secret, command_with_args):
             print('=' * 60)
         else:
             print("Couldn't get the following list with error = {}".format(result['error']))
-    elif command == 'timeline':
-        succeeded, result = twis.get_timeline(auth_secret[0], args['max_cnt_tweets'])
+    elif command == PytwisConst.CMD_TIMELINE:
+        succeeded, result = twis.get_timeline(auth_secret[0], args[PytwisConst.MAX_TWEET_CNT])
         if succeeded:
             if auth_secret[0] != '':
-                print('Succeeded in get {} tweets in the user timeline'.format(len(result['tweets'])))
+                print('Succeeded in get {} tweets in the user timeline'.format(len(result[PytwisConst.TWEETS])))
             else:
-                print('Succeeded in get {} tweets in the general timeline'.format(len(result['tweets'])))
-            print_tweets(result['tweets'])
+                print('Succeeded in get {} tweets in the general timeline'.format(len(result[PytwisConst.TWEETS])))
+            print_tweets(result[PytwisConst.TWEETS])
         else:
             if auth_secret[0] != '':
                 print("Couldn't get the user timeline with error = {}".format(result['error']))
@@ -222,8 +222,7 @@ def pytwis_command_processor(twis, auth_secret, command_with_args):
     else:
         pass
 
-
-def pytwis_cli():
+def pytwis_cli_init():
     # TODO: Add epilog for the help information about online commands after connecting to the Twitter clone.
     parser = argparse.ArgumentParser(description= \
                                          'Connect to the Redis database of a Twitter clone and '
@@ -248,11 +247,17 @@ def pytwis_cli():
         print('The input Redis server password is empty.')
 
     try:
-        twis = pytwis.Pytwis(args.redis_hostname, args.redis_port, args.redis_database, args.redis_password)
+        return pytwis.Pytwis(args.redis_hostname, args.redis_port, args.redis_database, args.redis_password), args
     except ValueError as e:
         print('Failed to connect to the Redis server: {}'.format(str(e)),
               file=sys.stderr)
-        return -1
+        return None, None
+
+
+def pytwis_cli():
+    twis, args = pytwis_cli_init()
+    if twis == None:
+        return
 
     auth_secret = ['']
     while True:
@@ -265,7 +270,7 @@ def pytwis_cli():
             if command_with_args[0] == "exit" or command_with_args[0] == 'quit':
                 # Log out of the current user before exiting.
                 if len(auth_secret[0]) > 0:
-                    pytwis_command_processor(twis, auth_secret, ['logout', {}])
+                    pytwis_command_processor(twis, auth_secret, [PytwisConst.CMD_LOGOUT, {}])
                 print('pytwis is exiting.')
                 return 0;
 

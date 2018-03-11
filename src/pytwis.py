@@ -5,6 +5,34 @@ from redis.exceptions import (ResponseError, TimeoutError, WatchError)
 import secrets
 import time
 
+class PytwisConst:
+    # Commands
+    CMD_REGISTER = 'register'
+    CMD_LOGIN = 'login'
+    CMD_LOGOUT = 'logout'
+    CMD_CHANGE_PASSWORD = 'changepassword'
+    CMD_POST = 'post'
+    CMD_FOLLOW = 'follow'
+    CMD_UNFOLLOW = 'unfollow'
+    CMD_FOLLOWERS = 'followers'
+    CMD_FOLLOWINGS = 'followings'
+    CMD_TIMELINE = 'timeline'
+
+    # others
+    AUTH = 'auth'
+    CONFIRM_PASSWORD = 'new_confirmed_password'
+    CMD = 'cmd'
+    ERROR = 'error'
+    FOLLOWEE = 'followee'
+    MAX_TWEET_CNT = 'max_tweet_cnt'
+    NEW_PASSWORD = 'new_password'
+    OLD_PASSWORD = 'old_password'
+    PASSWORD = 'password'
+    TWEET = 'tweet'
+    TWEETS = 'tweets'
+    USERNAME = 'username'
+
+
 class Pytwis:
     
     REDIS_SOCKET_CONNECT_TIMEOUT = 60
@@ -14,9 +42,9 @@ class Pytwis:
     USERS_HASH_KEY = 'users'
     
     USER_ID_PROFILE_KEY_FORMAT = 'user:{}'
-    USER_ID_PROFILE_USERNAME_KEY = 'username'
-    USER_ID_PROFILE_PASSWORD_KEY = 'password'
-    USER_ID_PROFILE_AUTH_KEY = 'auth'
+    USER_ID_PROFILE_USERNAME_KEY = PytwisConst.USERNAME
+    USER_ID_PROFILE_PASSWORD_KEY = PytwisConst.PASSWORD
+    USER_ID_PROFILE_AUTH_KEY = PytwisConst.AUTH
     USER_ID_PROFILE_USERID_NAME = 'userid'
     
     AUTHS_HASH_KEY = 'auths'
@@ -31,7 +59,7 @@ class Pytwis:
     POST_ID_UNIXTIME_KEY = 'unix_time'
     POST_ID_BODY_KEY = 'body'
     
-    GENERAL_TIMELINE_KEY = 'timeline'
+    GENERAL_TIMELINE_KEY = PytwisConst.CMD_TIMELINE
     GENERAL_TIMELINE_MAX_POST_CNT = 1000
     
     POST_ID_USER_KEY_FORMAT = 'posts:{}'
@@ -115,7 +143,7 @@ class Pytwis:
             # Create the user profile.
             # TODO: Store the hashed password instead of the raw password.
             pipe.hmset(user_id_profile_key, 
-                       {self.USER_ID_PROFILE_USERNAME_KEY: username, 
+                       {self.USER_ID_PROFILE_USERNAME_KEY: username,
                         self.USER_ID_PROFILE_PASSWORD_KEY: password,
                         self.USER_ID_PROFILE_AUTH_KEY: auth_secret})
             pipe.execute()
@@ -396,7 +424,7 @@ class Pytwis:
             # Get the user timeline.
             timeline_key = self.POST_ID_USER_KEY_FORMAT.format(user_id)
         
-        result['tweets'] = []
+        result[PytwisConst.TWEETS] = []
         if max_cnt_tweets == 0:
             return (True, result)
         elif max_cnt_tweets == -1:
@@ -418,10 +446,10 @@ class Pytwis:
             for post_id in post_ids:
                 post_id_key = self.POST_ID_KEY_FORMAT.format(post_id)
                 pipe.hgetall(post_id_key)
-            result['tweets'] = pipe.execute()
+            result[PytwisConst.TWEETS] = pipe.execute()
         
             # Get the user_id-to-username mappings for all the user IDs associated with the tweets.
-            user_id_set = { tweet[self.POST_ID_USERID_KEY] for tweet in result['tweets'] }
+            user_id_set = { tweet[self.POST_ID_USERID_KEY] for tweet in result[PytwisConst.TWEETS] }
             user_id_list = []
             pipe.multi()
             for user_id in user_id_set:
@@ -433,7 +461,7 @@ class Pytwis:
         user_id_to_username = { user_id: username for user_id, username in zip(user_id_list, username_list) }
         
         # Add the username for the user ID of each tweet.
-        for tweet in result['tweets']:
+        for tweet in result[PytwisConst.TWEETS]:
             tweet[self.USER_ID_PROFILE_USERNAME_KEY] = user_id_to_username[tweet[self.POST_ID_USERID_KEY]]
         
         return (True, result)
