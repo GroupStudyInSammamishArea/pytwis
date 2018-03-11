@@ -36,7 +36,7 @@ class Pytwis:
     
     POST_ID_USER_KEY_FORMAT = 'posts:{}'
     
-    def __init__(self, hostname = '127.0.0.1', port = 6379, password = ''):
+    def __init__(self, hostname='127.0.0.1', port=6379, db=0, password = ''):
         # TODO: Set unix_socket_path='/tmp/redis.sock' to use Unix domain socket 
         # if the host name is 'localhost'. Note that need to uncomment the following 
         # line in /etc/redis/redis.conf:
@@ -46,6 +46,7 @@ class Pytwis:
         self._rc = redis.StrictRedis(
             host=hostname,
             port=port,
+            db=db,
             password=password,
             decode_responses=True, # Decode the response bytes into strings.
             socket_connect_timeout=self.REDIS_SOCKET_CONNECT_TIMEOUT)
@@ -405,6 +406,9 @@ class Pytwis:
             
         # Get the post IDs of the tweets.
         post_ids = self._rc.lrange(timeline_key, 0, last_tweet_index)
+        
+        if len(post_ids) == 0:
+            return (True, result)
         
         with self._rc.pipeline() as pipe:
             # Get the tweets with their user IDs and UNIX timestamps.
