@@ -71,9 +71,9 @@ def pytwis_get_request_processor(twis, auth_secret, command_with_args):
     print("pytwis_get_request_processor")
 
     if command == PytwisConst.CMD_REGISTER:
-        succeeded, result = twis.register(args[PytwisConst.USERNAME], args[PytwisConst.PASSWORD])
+        succeeded, result = twis.register(args[PytwisConst.USER_NAME], args[PytwisConst.PASSWORD])
     elif command == PytwisConst.CMD_LOGIN:
-        succeeded, result = twis.login(args[PytwisConst.USERNAME], args[PytwisConst.PASSWORD])
+        succeeded, result = twis.login(args[PytwisConst.USER_NAME], args[PytwisConst.PASSWORD])
     elif command == PytwisConst.CMD_LOGOUT:
         succeeded, result = twis.logout(auth_secret)
     elif command == PytwisConst.CMD_CHANGE_PASSWORD:

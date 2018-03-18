@@ -6,32 +6,42 @@ import secrets
 import time
 
 class PytwisConst:
-    # Commands
-    CMD_REGISTER = 'register'
-    CMD_LOGIN = 'login'
-    CMD_LOGOUT = 'logout'
-    CMD_CHANGE_PASSWORD = 'changepassword'
-    CMD_POST = 'post'
-    CMD_FOLLOW = 'follow'
-    CMD_UNFOLLOW = 'unfollow'
-    CMD_FOLLOWERS = 'followers'
-    CMD_FOLLOWINGS = 'followings'
-    CMD_TIMELINE = 'timeline'
-
-    # others
     AUTH = 'auth'
+    CHANGE_PASSWORD = 'changepassword'
     CONFIRM_PASSWORD = 'new_confirmed_password'
     CMD = 'cmd'
     ERROR = 'error'
+    FOLLOW = 'follow'
     FOLLOWEE = 'followee'
+    FOLLOWERS = 'followers'
+    FOLLOWER_LIST = 'follower_list'
+    FOLLOWINGS = 'followings'
+    FOLLOWING_LIST = 'following_list'
+    LOGIN = 'login'
+    LOGOUT = 'logout'
     MAX_TWEET_CNT = 'max_tweet_cnt'
     NEW_PASSWORD = 'new_password'
     OLD_PASSWORD = 'old_password'
     PASSWORD = 'password'
+    POST = 'post'
+    REGISTER = 'register'
+    TIMELINE = 'timeline'
     TWEET = 'tweet'
     TWEETS = 'tweets'
-    USERNAME = 'username'
+    UNFOLLOW = 'unfollow'
+    USER_NAME = 'username'
 
+    # Commands
+    CMD_REGISTER = REGISTER
+    CMD_LOGIN = LOGIN
+    CMD_LOGOUT = LOGOUT
+    CMD_CHANGE_PASSWORD = CHANGE_PASSWORD
+    CMD_POST = POST
+    CMD_FOLLOW = FOLLOW
+    CMD_UNFOLLOW = UNFOLLOW
+    CMD_FOLLOWERS = FOLLOWERS
+    CMD_FOLLOWINGS = FOLLOWINGS
+    CMD_TIMELINE = TIMELINE
 
 class Pytwis:
     
@@ -42,9 +52,9 @@ class Pytwis:
     USERS_HASH_KEY = 'users'
     
     USER_ID_PROFILE_KEY_FORMAT = 'user:{}'
-    USER_ID_PROFILE_USERNAME_KEY = PytwisConst.USERNAME
-    USER_ID_PROFILE_PASSWORD_KEY = PytwisConst.PASSWORD
-    USER_ID_PROFILE_AUTH_KEY = PytwisConst.AUTH
+    USER_ID_PROFILE_USERNAME_KEY = 'username'
+    USER_ID_PROFILE_PASSWORD_KEY = 'password'
+    USER_ID_PROFILE_AUTH_KEY = 'auth'
     USER_ID_PROFILE_USERID_NAME = 'userid'
     
     AUTHS_HASH_KEY = 'auths'
@@ -59,7 +69,7 @@ class Pytwis:
     POST_ID_UNIXTIME_KEY = 'unix_time'
     POST_ID_BODY_KEY = 'body'
     
-    GENERAL_TIMELINE_KEY = PytwisConst.CMD_TIMELINE
+    GENERAL_TIMELINE_KEY = 'timeline'
     GENERAL_TIMELINE_MAX_POST_CNT = 1000
     
     POST_ID_USER_KEY_FORMAT = 'posts:{}'
@@ -117,7 +127,7 @@ class Pytwis:
                     pipe.watch(self.USERS_HASH_KEY)
                     username_exists = pipe.hexists(self.USERS_HASH_KEY, username)
                     if username_exists:
-                        result['error'] = 'username {} already exists'.format(username)
+                        result[PytwisConst.ERROR] = 'username {} already exists'.format(username)
                         return (False, result);
                     
                     # Get the next user-id. If the key "next_user_id" doesn't exist,
@@ -148,8 +158,8 @@ class Pytwis:
                         self.USER_ID_PROFILE_AUTH_KEY: auth_secret})
             pipe.execute()
 
-        result[self.USER_ID_PROFILE_USERID_NAME] = user_id
-        result[self.USER_ID_PROFILE_AUTH_KEY] = auth_secret
+        result[PytwisConst.USER_NAME] = user_id
+        result[PytwisConst.AUTH] = auth_secret
         
         return (True, result)
             
@@ -159,14 +169,14 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         # Check if the old password matches.
         user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(user_id)
         stored_password = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_PASSWORD_KEY)
         if stored_password != old_password:
-            result['error'] = 'Incorrect old password'
+            result[PytwisConst.ERROR] = 'Incorrect old password'
             return (False, result)
         
         # TODO: add the new password check.
@@ -183,7 +193,7 @@ class Pytwis:
             pipe.hdel(self.AUTHS_HASH_KEY, auth_secret)
             pipe.execute()
         
-        result[self.USER_ID_PROFILE_AUTH_KEY] = new_auth_secret
+        result[PytwisConst.AUTH] = new_auth_secret
         return (True, result)
     
     def login(self, username, password):
@@ -192,7 +202,7 @@ class Pytwis:
         # Get the user-id based on the username.
         user_id = self._rc.hget(self.USERS_HASH_KEY, username)
         if user_id is None:
-            result['error'] = "username {} doesn't exist".format(username)
+            result[PytwisConst.ERROR] = "username {} doesn't exist".format(username)
             return (False, result)
         
         # Compare the input password with the stored one. If it matches, 
@@ -200,11 +210,11 @@ class Pytwis:
         user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(user_id)
         stored_password = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_PASSWORD_KEY)
         if password == stored_password:
-            result[self.USER_ID_PROFILE_USERNAME_KEY] = username
-            result[self.USER_ID_PROFILE_AUTH_KEY] = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_AUTH_KEY)
+            result[PytwisConst.USER_NAME] = username
+            result[PytwisConst.AUTH] = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_AUTH_KEY)
             return (True, result)
         else:
-            result['error'] = 'Incorrect password'
+            result[PytwisConst.ERROR] = 'Incorrect password'
             return (False, result)
     
     def logout(self, auth_secret):
@@ -213,7 +223,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         # Generate the new authentication secret.
@@ -227,10 +237,9 @@ class Pytwis:
             pipe.hset(self.AUTHS_HASH_KEY, new_auth_secret, user_id)
             pipe.hdel(self.AUTHS_HASH_KEY, auth_secret)
             pipe.execute()
-            
-        result[self.USER_ID_PROFILE_USERNAME_KEY] = self._rc.hget(user_id_profile_key, self.USER_ID_PROFILE_USERNAME_KEY)
-        result[self.USER_ID_PROFILE_AUTH_KEY] = ''
-        result[self.USER_ID_PROFILE_USERNAME_KEY] = ''
+
+        result[PytwisConst.AUTH] = ''
+        result[PytwisConst.USER_NAME] = ''
         return (True, result)
     
     def post_tweet(self, auth_secret, tweet):
@@ -239,7 +248,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         # Get the next user-id. If the key "next_user_id" doesn't exist,
@@ -284,7 +293,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         with self._rc.pipeline() as pipe:
@@ -296,7 +305,7 @@ class Pytwis:
                     pipe.watch(self.USERS_HASH_KEY)
                     followee_user_id = pipe.hget(self.USERS_HASH_KEY, followee_username)
                     if followee_user_id is None:
-                        result['error'] = "Followee {} doesn't exist".format(followee_username)
+                        result[PytwisConst.ERROR] = "Followee {} doesn't exist".format(followee_username)
                         return (False, result);
                     
                     break
@@ -320,7 +329,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         with self._rc.pipeline() as pipe:
@@ -332,7 +341,7 @@ class Pytwis:
                     pipe.watch(self.USERS_HASH_KEY)
                     followee_user_id = pipe.hget(self.USERS_HASH_KEY, followee_username)
                     if followee_user_id is None:
-                        result['error'] = "Followee {} doesn't exist".format(followee_username)
+                        result[PytwisConst.ERROR] = "Followee {} doesn't exist".format(followee_username)
                         return (False, result);
                     
                     break
@@ -356,7 +365,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         # Get the list of followers' user_ids.
@@ -364,7 +373,7 @@ class Pytwis:
         follower_user_ids = self._rc.zrange(follower_zset_key, 0, -1)
         
         if follower_user_ids is None or len(follower_user_ids) == 0:
-            result['follower_list'] = []
+            result[PytwisConst.FOLLOWER_LIST] = []
             return (True, result)
         
         # Get the list of followers' usernames from their user_ids.
@@ -375,7 +384,7 @@ class Pytwis:
                 follower_user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(follower_user_id)
                 pipe.hget(follower_user_id_profile_key, self.USER_ID_PROFILE_USERNAME_KEY)
             
-            result['follower_list'] = pipe.execute()
+            result[PytwisConst.FOLLOWER_LIST] = pipe.execute()
             
         return (True, result)
         
@@ -385,7 +394,7 @@ class Pytwis:
         # Check if the user is logged in.
         loggedin, user_id = self._is_loggedin(auth_secret)
         if not loggedin:
-            result['error'] = 'Not logged in'
+            result[PytwisConst.ERROR] = 'Not logged in'
             return (False, result)
         
         # Get the list of followers' user_ids.
@@ -393,7 +402,7 @@ class Pytwis:
         following_user_ids = self._rc.zrange(following_zset_key, 0, -1)
         
         if following_user_ids is None or len(following_user_ids) == 0:
-            result['following_list'] = []
+            result[FOLLOWING_LIST] = []
             return (True, result)
         
         # Get the list of followings' usernames from their user_ids.
@@ -404,7 +413,7 @@ class Pytwis:
                 following_user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(following_user_id)
                 pipe.hget(following_user_id_profile_key, self.USER_ID_PROFILE_USERNAME_KEY)
             
-            result['following_list'] = pipe.execute()
+            result[FOLLOWING_LIST] = pipe.execute()
             
         return (True, result)
     
@@ -418,7 +427,7 @@ class Pytwis:
             # Check if the user is logged in.
             loggedin, user_id = self._is_loggedin(auth_secret)
             if not loggedin:
-                result['error'] = 'Not logged in'
+                result[PytwisConst.ERROR] = 'Not logged in'
                 return (False, result)
             
             # Get the user timeline.
