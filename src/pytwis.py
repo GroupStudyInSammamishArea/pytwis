@@ -402,7 +402,7 @@ class Pytwis:
         following_user_ids = self._rc.zrange(following_zset_key, 0, -1)
         
         if following_user_ids is None or len(following_user_ids) == 0:
-            result[FOLLOWING_LIST] = []
+            result[PytwisConst.FOLLOWING_LIST] = []
             return (True, result)
         
         # Get the list of followings' usernames from their user_ids.
@@ -413,7 +413,7 @@ class Pytwis:
                 following_user_id_profile_key = self.USER_ID_PROFILE_KEY_FORMAT.format(following_user_id)
                 pipe.hget(following_user_id_profile_key, self.USER_ID_PROFILE_USERNAME_KEY)
             
-            result[FOLLOWING_LIST] = pipe.execute()
+            result[PytwisConst.FOLLOWING_LIST] = pipe.execute()
             
         return (True, result)
     
